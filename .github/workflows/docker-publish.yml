@@ -12,7 +12,7 @@ on:
     # Publish `v1.2.3` tags as releases.
     tags:
       - v*
-      - test-v*
+      - *-v*
 
 # Defines two custom environment variables for the workflow. 
 # These are used for the Container registry domain, and a 
@@ -20,7 +20,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  DEFAULT_BRANCH: main
 
 # Only one job for creating and pushing Docker image
 jobs:
