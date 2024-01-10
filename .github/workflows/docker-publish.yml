@@ -25,7 +25,7 @@ env:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.ref_name, '-')  != 'true' }}
+    if: ${{ contains(github.ref_name, '-')  == failure() }}
     # Sets the permissions granted to the `GITHUB_TOKEN` 
     # for the actions in this job.
     permissions:
@@ -79,11 +79,9 @@ jobs:
           TAG: ${{ github.ref_name }}
         id: split
         run: echo "::set-output name=branch::${TAG##*-}"
-          echo "::set-output name=tag::${TAG*-}"
       - name: Test variable
         run: |
           echo ${{ steps.split.outputs.branch }}
-          echo ${{ steps.split.outputs.tag }}
       - name: Checkout repository
         uses: actions/checkout@v4
       # Uses the `docker/login-action` action to log in to the Container 
