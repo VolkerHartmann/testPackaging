@@ -20,13 +20,13 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  DEFAULT_BRANCH: "main"
+  DEFAULT_BRANCH: main
 
 # Only one job for creating and pushing Docker image
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
-    if: github.ref_name == ${{github.env.DEFAULT_BRANCH}}
+    if: ${{ contains(github.ref_name, '-')  != 'true' }}
     # Sets the permissions granted to the `GITHUB_TOKEN` 
     # for the actions in this job.
     permissions:
@@ -67,7 +67,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
   build-and-push-image-of-branch:
     runs-on: ubuntu-latest
-    if: github.ref_name != ${{github.env.DEFAULT_BRANCH}}
+    if: contains(github.ref_name, '-')
     # Sets the permissions granted to the `GITHUB_TOKEN` 
     # for the actions in this job.
     permissions:
@@ -75,6 +75,16 @@ jobs:
       packages: write
       # 
     steps:
+      - name: Split first part 
+        env:
+          TAG: ${{ github.ref_name }}
+        id: split
+        run: echo "::set-output name=branch::${TAG##*-}"
+          echo "::set-output name=tag::${TAG*-}"
+      - name: Test variable
+        run: |
+          echo ${{ steps.split.outputs.branch }}
+          echo ${{ steps.split.outputs.tag }}
       - name: Checkout repository
         uses: actions/checkout@v4
       # Uses the `docker/login-action` action to log in to the Container 
@@ -95,7 +105,7 @@ jobs:
         id: meta-branch
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{github.ref_name}}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{steps.split.outputs.branch}}
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
       # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see "[Usage](https://github.com/docker/build-push-action#usage)" in the README of the `docker/build-push-action` repository.
       # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
