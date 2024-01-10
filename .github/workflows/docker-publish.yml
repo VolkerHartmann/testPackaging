@@ -78,7 +78,7 @@ jobs:
         env:
           TAG: ${{ github.ref_name }}
         id: split
-        run: echo "branch=${TAG##*-}" >> $GITHUB_OUTPUT
+        run: echo "branch=${TAG##-*}" >> $GITHUB_OUTPUT
       - name: Test variable
         run: |
           echo ${{ steps.split.outputs.branch }}
